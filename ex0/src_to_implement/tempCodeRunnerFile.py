@@ -1,1 +1,1 @@
-tabulate
+from skimage.transform import resize

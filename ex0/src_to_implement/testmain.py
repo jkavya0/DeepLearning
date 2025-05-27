@@ -1,8 +1,5 @@
-from generator import ImageGenerator
-#from pattern import Checker, Circle, Spectrum
-
-file_path = r"exercise_data/"
-label_path = r"Labels.json"
+# testmain.py
+# Author: Kavya Jayaramaiah
 
 from pattern import Checker, Circle, Spectrum
 
@@ -38,26 +35,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-    
-#for generator
-
-batch_size = 9
-image_size = [64, 64, 3]  
-
-
-gen = ImageGenerator(
-    file_path=file_path,
-    label_path=label_path,
-    batch_size=batch_size,
-    image_size=image_size,
-    rotation=True,
-    mirroring=True,
-    shuffle=True
-)
-
-gen.show()
-
-print("you got your image generator!!")
-
-

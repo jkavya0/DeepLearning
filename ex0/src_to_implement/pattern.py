@@ -1,42 +1,32 @@
-# Pattern File -
-# Author - Rahul J Hirur
+# Author - Kavya Jayaramaiah
+# idmid: iz81eniq
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-# Creating a Checker board Class
-
 class Checker:
 
-    # __init__ is the constructor class
     def __init__(self, resolution, tile):
-        try:
+       
             self.resolution = resolution
             self.tile = tile
-
-            assert self.tile > 0, "Error - Tile size cannot be less than 1"
-            assert self.resolution > 0, "Error - Resolution cannot be less than 1"
-            assert self.resolution % (2 * self.tile) == 0, "Error - Tile size incorrect to make a Checkerboard"
-
             self.output = np.array([])
 
-        except AssertionError as msg:
-            print('\n//////')
-            print(msg)
-            print('\n//////')
-
     def draw(self):
-        b = np.ones([self.tile, self.tile])
-        a = np.zeros([self.tile, self.tile])
 
-        prime_matrix = np.concatenate([np.concatenate((a, b), axis=1), np.concatenate((b, a), axis=1)], axis=0)
+        w = np.ones([self.tile, self.tile])
+        b = np.zeros([self.tile, self.tile])
+
+        board_matrix = np.block([[b,w],[w,b]])
+        top = np.hstack((b,w))
+        bottom = np.hstack((w,b))
+        board_matrix = np.vstack((top, bottom))
 
         matrix_len = int(self.resolution / (2 * self.tile))
-        outputs = np.tile(prime_matrix, [matrix_len, matrix_len])
-        self.output = outputs * 1
+        output = np.tile(board_matrix, [matrix_len, matrix_len])
+        self.output = output * 1
 
-        return outputs
+        return output
 
     def show(self):
         plt.imshow(self.draw(), cmap='gray')
@@ -47,37 +37,24 @@ class Checker:
 # Creating a Circle Class
 
 class Circle:
-
-    # __init__ is the constructor class
     def __init__(self, resolution, radius, position):
-        try:
-
+    
             self.resolution = resolution
             self.radius = radius
             self.position = position
-
-            assert self.radius > 0, "Error - Radius cannot be less than 1"
-            assert self.resolution > 0, "Error - Resolution cannot be less than 1"
-            assert self.resolution >= (2 * self.radius), "Error - Circle Overflow"
-
             self.output = np.array([])
 
-        except AssertionError as msg:
-            print('\n//////')
-            print(msg)
-            print('\n//////')
-
     def draw(self):
+
         lin_arr = np.linspace(1, self.resolution, self.resolution * 1)
         x, y = np.meshgrid(lin_arr, lin_arr)
-        a = x * 0
-        a[np.where((x - self.position[0] - 1) ** 2 + (y - self.position[1] - 1) ** 2 <= self.radius ** 2)] = 1
-        b = a * 1
+        b = x * 0
+        b[np.where((x - self.position[0] - 1) ** 2 + (y - self.position[1] - 1) ** 2 <= self.radius ** 2)] = 1
+        w = b * 1
+        b = b.astype('bool')
+        self.output = w.astype('bool')
 
-        a = a.astype('bool')
-        self.output = b.astype('bool')
-
-        return a
+        return b
 
     def show(self):
         plt.imshow(self.draw(), cmap='gray')
@@ -86,34 +63,28 @@ class Circle:
 
 
 # Creating a spectrum class
+
 class Spectrum:
 
-    # __init__ is the constructor class
     def __init__(self, resolution):
-        try:
+       
             self.resolution = resolution
-            assert self.resolution > 0, "Error - Resolution cannot be less than 1"
             self.output = np.array([])
 
-        except AssertionError as msg:
-            print('\n//////')
-            print(msg)
-            print('\n//////')
-
     def draw(self):
+
         (template_mat, _) = np.meshgrid(np.linspace(0, 1, self.resolution), np.linspace(0, 1, self.resolution))
 
         red = template_mat
         blue = np.flip(red)
         green = np.rot90(blue)
 
-        fin_out = np.dstack((red, green, blue))
-        b = fin_out * 1
+        fin_rgb = np.dstack((red, green, blue))
+        a = fin_rgb * 1
+        self.output = a
 
-        self.output = b
-
-        return fin_out
+        return fin_rgb
 
     def show(self):
-        plt.imshow(self.draw(), cmap='gray')
+        plt.imshow(self.draw())
         plt.show()

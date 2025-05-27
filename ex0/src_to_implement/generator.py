@@ -1,3 +1,6 @@
+# Author - Kavya Jayaramaiah
+# idmid: iz81eniq
+
 import os.path
 import json
 import scipy.misc
@@ -31,19 +34,19 @@ class ImageGenerator:
         self.shuffle = shuffle
         self.epoch_no = 0
 
+
         self.file_path = file_path
         self.file_list = self.getFilelist()
-
         self.label_path = label_path
         self.labels_dict = self.readJson()
 
-        master_arr = np.arange(len(self.labels_dict))
 
+        arr_seq = np.arange(len(self.labels_dict)) #its like the sequence 
         if self.shuffle:
-            np.random.shuffle(master_arr)
+            np.random.shuffle(arr_seq)# randomly placed the object each eopch, avoids over fitting 
+        self.arr_seq = arr_seq# stores the random number
+        self.end_position = 0# acts like a pointer to track the batch where extaclly it is the points 
 
-        self.master_arr = master_arr
-        self.end_pointer = 0
 
     def next(self):
         # This function creates a batch of images and corresponding labels and returns them.
@@ -54,52 +57,59 @@ class ImageGenerator:
         # TODO: Find Random method
         # TODO: Find circular for loop
 
-        # Create the epoch size array
-        images = []
-        labels = []
+        
+        batch_images = []
+        batch_labels = []
 
-        if self.shuffle and (self.epoch_no != (self.end_pointer // len(self.master_arr))):
+        # Create the new epoch 
+
+        if self.shuffle and (self.epoch_no != (self.end_position // len(self.arr_seq))):
             print('Inside the shuffle loop')
             self.epoch_no = self.current_epoch()
-            master_arr = np.arange(len(self.labels_dict))
-            np.random.shuffle(master_arr)
-            self.master_arr = master_arr
+            arr_seq = np.arange(len(self.labels_dict))
+            np.random.shuffle(arr_seq)
+            self.arr_seq = arr_seq
 
-        for i in range(self.end_pointer, self.end_pointer + self.batch_size, 1):
-            temp_img = self.readSingleImg(self.file_list[self.master_arr[i % len(self.master_arr)]])
-            # temp_img = self.imgdata[self.master_arr[i % len(self.master_arr)]]
-            temp_label = self.labels_dict[self.master_arr[i % len(self.master_arr)]]
+        for i in range(self.end_position, self.end_position + self.batch_size, 1):
+
+            temp_images = self.readSingleImg(self.file_list[self.arr_seq[i % len(self.arr_seq)]])
+            temp_label = self.labels_dict[self.arr_seq[i % len(self.arr_seq)]]
 
             if self.mirroring or self.rotation:
-                temp_img = self.augment(temp_img)
+                temp_images = self.augment(temp_images)
 
-            images.append(temp_img)
-            labels.append(temp_label)
+            batch_images.append(temp_images)
+            batch_labels.append(temp_label)
 
-        self.end_pointer = self.end_pointer + self.batch_size
-        images = np.array(images)
-        return images, labels
+        self.end_position = self.end_position + self.batch_size
+        batch_images = np.array(batch_images)
+
+        return batch_images, batch_labels
+
 
     def augment(self, img):
         # this function takes a single image as an input and performs a random transformation
         # (mirroring and/or rotation) on it and outputs the transformed image
         # TODO: implement augmentation function
-
-        img_aug = img
+         
+         
+        img_aug = img.copy()
         if self.mirroring:
-            if np.random.choice([0, 1]):
-                img_aug = np.flip(img, axis=1)  # Returns the mirror image of an array
+
+            if self.mirroring and np.random.rand() < 0.5:
+                img_aug = np.flip(img_aug, axis=1)  # returns the mirror image of an array
 
         if self.rotation:
-            if np.random.choice([0, 1]):
-                deg = np.random.choice([1, 2, 3])  # Randomly returns one of the specified values
-                img_aug = np.rot90(img, k=deg)  # Number of times the array is rotated by 90 degrees
+
+            if self.rotation and np.random.rand() < 0.5:
+                degree = np.random.choice([1, 2, 3])  # Randomly returns one of the specified values
+                img_aug = np.rot90(img_aug, k=degree)  # Number of times the array is rotated by 90 degrees
 
         return img_aug
 
     def current_epoch(self):
         # return the current epoch number
-        epoch_val = (self.end_pointer - 1) // len(self.master_arr)
+        epoch_val = (self.end_position - 1) // len(self.arr_seq)
         if epoch_val == -1:
             epoch_val = 0
         return epoch_val
@@ -115,47 +125,42 @@ class ImageGenerator:
         # In order to verify that the generator creates batches as required, this functions calls next to get a
         # batch of images and labels and visualizes it.
         # TODO: implement show method
-        [curr_img, curr_label] = self.next()
-        col_size = 3
-        row_size = self.batch_size // col_size
-        if self.batch_size % col_size != 0:
-            row_size = row_size + 1
+        current_images, current_label = self.next()
+        column_size = 3
+        row_size = (self.batch_size + column_size - 1) // column_size
 
-        fig = plt.figure(figsize=((((self.batch_size - 1) // 12) + 1) * 10, (((self.batch_size - 1) // 12) + 1) * 10))
+    
+        fig = plt.figure(figsize=(column_size * 4, row_size * 4))
 
         for i in range(self.batch_size):
-            ax1 = fig.add_subplot(row_size, col_size, i + 1)
-            ax1.imshow(curr_img[i], aspect='auto')
-            ax1.axis('off')
-            ax1.set_title(self.class_name(curr_label[i]))
+            sb = fig.add_subplot(row_size, column_size, i + 1)
+            sb.imshow(current_images[i], aspect='auto')
+            sb.axis('off')
+            sb.set_title(self.class_name(current_label[i]))
 
-        fig.show()
+        # plt.tight_layout()
+        plt.show()
 
     def getFilelist(self):
 
-        # Get the list of files inside a directories
-        # list to store
-
         file_dir = []
-
         dir_data = os.listdir(self.file_path)
         dir_data = sorted(dir_data, key=lambda x: int(os.path.splitext(x)[0]))
 
-        # Iterate directory
-        for path in dir_data:
-            # check if current path is a file
-            if os.path.isfile(os.path.join(self.file_path, path)):
-                file_dir.append(os.path.join(self.file_path, path))
+        
+        for filename in dir_data:
+            
+            if os.path.isfile(os.path.join(self.file_path, filename)):
+                file_dir.append(os.path.join(self.file_path, filename))
+
         return file_dir
 
     def readJson(self):
 
-        # returns JSON object as a dictionary
-        # Opening JSON file
-        f = open(self.label_path)
-        data = json.load(f)
-        f.close()
-        val = [[eval(x) for x in list(data.keys())], list(data.values())]
+        json_file = open(self.label_path)
+        data = json.load(json_file)
+        json_file.close()
+        val = [[int(x) for x in list(data.keys())], list(data.values())]
         new_dict = dict(zip(val[0], val[1]))
         return new_dict
 
