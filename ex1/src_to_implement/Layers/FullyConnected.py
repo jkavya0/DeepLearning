@@ -2,7 +2,7 @@ import numpy as np
 
 from Layers.Base import BaseLayer
 
-from Optimization import optimizers
+from Optimization import Optimizers
 
 class FullyConnected(BaseLayer):
 
@@ -22,8 +22,8 @@ class FullyConnected(BaseLayer):
         
         rows = input_size + 1  # +1 for bias
         cols = output_size
-        wieght_shape = rows + cols #for signal matrix multiplication
-        self.weights = np.random.uniform(0.0, 1.0, ( wieght_shape)) # Initialize weights uniformly random in the range [0, 1) 
+        
+        self.weights = np.random.uniform(0.0, 1.0, (rows,cols)) # Initialize weights uniformly random in the range [0, 1) 
         
         self.forward_output = None
         self.propagated_error = None
