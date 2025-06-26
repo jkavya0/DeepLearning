@@ -3,7 +3,7 @@ from Layers import *
 from Optimization import *
 import numpy as np
 from scipy import stats
-from scipy.ndimage.filters import gaussian_filter
+from scipy.ndimage import gaussian_filter
 import NeuralNetwork
 import matplotlib.pyplot as plt
 import os
