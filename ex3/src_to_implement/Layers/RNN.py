@@ -4,6 +4,17 @@ from Layers.Base import BaseLayer  # BaseLayer is the base class for all layers
 import warnings
 import copy
 
+# Simple default weight initializer (Xavier uniform)
+class DefaultWeightsInitializer:
+    def initialize(self, shape, fan_in, fan_out):
+        limit = np.sqrt(6 / (fan_in + fan_out))
+        return np.random.uniform(-limit, limit, size=shape)
+
+# Simple default bias initializer (zeros)
+class DefaultBiasInitializer:
+    def initialize(self, shape, fan_in, fan_out):
+        return np.zeros(shape)
+
 
 class RNN(BaseLayer):
 
@@ -22,7 +33,6 @@ class RNN(BaseLayer):
 
         # Initialize fully connected layers
         self.h_layer = FullyConnected.FullyConnected(self.input_size + self.hidden_size, self.hidden_size)
-
         self.y_layer = FullyConnected.FullyConnected(self.hidden_size, self.output_size)
 
         self._optimizer = None
@@ -47,9 +57,7 @@ class RNN(BaseLayer):
         self.input_tensor = None
         self.hidden_state = None
 
-        self.initialize()
-
-        # self.weights = np.random.rand(input_size + hidden_size + 1, hidden_size)
+        # Removed calling initialize() here to allow passing initializers explicitly before initialization.
 
     @property
     def memorize(self):
@@ -99,7 +107,11 @@ class RNN(BaseLayer):
 
         for i in range(self.time_step):
 
-            x_new = np.concatenate((input_tensor[i].reshape(input_tensor[i].size, 1), self.hidden_state_int.reshape(self.hidden_state[i, :].size, 1))).T
+            x_new = np.concatenate((
+                input_tensor[i].reshape(input_tensor[i].size, 1),
+                self.hidden_state_int.reshape(self.hidden_state[i, :].size, 1)
+            )).T
+
             # Calculate the output of h layer
             self.h_value = self.h_layer.forward(x_new)
             self.hidden_state_int = self.tanH.forward(self.h_value.T).reshape(self.hidden_state[i, :].size)
@@ -107,11 +119,10 @@ class RNN(BaseLayer):
 
             # Calculate the output of y layer
             y_value = self.y_layer.forward(self.hidden_state[i, :].reshape(1, self.hidden_state[i, :].size))
-
             self.forward_output[i, :] = self.sigmoid.forward(y_value)
-            if self.optimizer is not None:
-                if self.optimizer.regularizer is not None:
-                    self.norm_sum = self.optimizer.regularizer.norm(self.weights)
+
+            if self.optimizer is not None and self.optimizer.regularizer is not None:
+                self.norm_sum = self.optimizer.regularizer.norm(self.weights)
 
         return self.forward_output
 
@@ -123,44 +134,66 @@ class RNN(BaseLayer):
         self.gradient_weights_y = 0
         self.backward_output = np.zeros((self.time_step, self.input_size))
         h_next = 0
-        # self.weights = self.h_layer.weights
 
         for i in range(self.time_step - 1, -1, -1):
 
             # Calculate the Loss of y with respect to the sigmoid function
             self.sigmoid.forward_output = self.forward_output[i, :]
             Loss_y = self.sigmoid.backward(self.error_tensor[i, :])
-            self.y_layer.input_tensor = np.concatenate((self.hidden_state[i, :], np.ones(1))).reshape(1, self.hidden_state[i, :].size + 1)
-            # Calculate the Loss of y with respect to the weights
+
+            # Prepare input tensor for y_layer backward
+            self.y_layer.input_tensor = np.concatenate((
+                self.hidden_state[i, :],
+                np.ones(1)
+            )).reshape(1, self.hidden_state[i, :].size + 1)
+
+            # Backprop through y_layer
             self.delta_y = self.y_layer.backward(Loss_y.reshape(1, Loss_y.size))
-            # Calculate the Loss of two branches of hidden states by adding them together
+
+            # Backprop through tanh
             self.tanH.forward_output = self.hidden_state[i, :]
-            # Calculate the Loss of h with respect to the tanh function
             Loss_h = self.tanH.backward(self.delta_y + h_next)
-            # modify the input of h layer
+
+            # Prepare input tensor for h_layer backward
             if i == 0:
-                tmp_value = np.concatenate((self.input_tensor[i, :], np.zeros(self.hidden_size))).reshape(1, self.input_tensor[i, :].size + self.hidden_size)
+                tmp_value = np.concatenate((
+                    self.input_tensor[i, :],
+                    np.zeros(self.hidden_size)
+                )).reshape(1, self.input_tensor[i, :].size + self.hidden_size)
             else:
-                tmp_value = np.concatenate((self.input_tensor[i, :], self.hidden_state[i-1, :])).reshape(1, self.input_tensor[i, :].size + self.hidden_state[i, :].size)
+                tmp_value = np.concatenate((
+                    self.input_tensor[i, :],
+                    self.hidden_state[i-1, :]
+                )).reshape(1, self.input_tensor[i, :].size + self.hidden_state[i, :].size)
 
             self.h_layer.input_tensor = np.concatenate((tmp_value, np.ones((tmp_value.shape[0], 1))), axis=1)
-            # Calculate the Loss of h with respect to the weights
+
+            # Backprop through h_layer
             self.delta_h = self.h_layer.backward(Loss_h)
+
+            # Accumulate gradients for all timesteps
             self.gradient_weights += self.h_layer.gradient_weights
             self.gradient_weights_y += self.y_layer.gradient_weights
-            # Calculate the Loss of the input of h layer
+
+            # Calculate error propagated to input
             self.backward_output[i, :] = self.delta_h[:, 0:self.input_size]
 
             h_next = self.delta_h[:, self.input_size:self.input_size + self.hidden_size]
 
         if self.optimizer is not None:
-            # Applying the optimizer to the weights
+            # Apply optimizer update to weights
             self.h_layer.weights = self.optimizer.calculate_update(self.h_layer.weights, self.gradient_weights)
             self.y_layer.weights = self.optimizer.calculate_update(self.y_layer.weights, self.gradient_weights_y)
 
         return self.backward_output
 
     def initialize(self, weights_initializer=None, bias_initializer=None):
+
+        # Provide default initializers if none supplied
+        if weights_initializer is None:
+            weights_initializer = DefaultWeightsInitializer()
+        if bias_initializer is None:
+            bias_initializer = DefaultBiasInitializer()
 
         # Initialize the weights of the h layer
         self.h_layer.initialize(weights_initializer, bias_initializer)

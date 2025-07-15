@@ -1,18 +1,17 @@
 import numpy as np
 from Layers.Base import BaseLayer
 
-
 class Sigmoid(BaseLayer):
-
     def __init__(self):
         super().__init__()
-        self.backward_output = None
-        self.forward_output = None
+        self._sigmoid_output = None  
 
-    def forward(self, input_tensor):
-        self.forward_output = 1 / (1 + np.exp(-input_tensor))
-        return self.forward_output
+    def forward(self, inputs):
+        
+        inputs = np.clip(inputs, -500, 500)
+        self._sigmoid_output = 1 / (1 + np.exp(-inputs))
+        return self._sigmoid_output
 
-    def backward(self, error_tensor):
-        self.backward_output = error_tensor * self.forward_output * (1 - self.forward_output)
-        return self.backward_output
+    def backward(self, delta):
+        # Derivative: σ(x)(1 - σ(x))
+        return delta * self._sigmoid_output * (1 - self._sigmoid_output)

@@ -28,8 +28,6 @@ class FullyConnected(BaseLayer):
         self.forward_output = None
         self.propagated_error = None
 
-        self.norm_sum = 0  # Initialize norm_sum for regularization purposes
-
         
     def forward(self, input_tensor):
         
