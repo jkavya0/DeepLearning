@@ -137,7 +137,7 @@ class RNN(BaseLayer):
             # forward through y-layer and sigmoid
             y_lin = self.y_layer.forward(h_act)
             y_act = self.sigmoid.forward(y_lin)
-            # ----------------------------------------------------------------
+            
 
             # 1) output backprop
             dy = self.sigmoid.backward(error_tensor[t].reshape(1, -1))
