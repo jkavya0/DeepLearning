@@ -1,0 +1,7 @@
+dependencies:
+  - matplotlib
+  - numpy
+  - scikit-learn
+  - scipy
+  - tabulate
+
