@@ -1,98 +1,143 @@
-Deep Learning Exercises
-This repository contains my implementations and coursework for the Deep Learning Exercises course.
-The work in this repository starts with Python and NumPy fundamentals, then builds up a small deep learning framework from scratch, extends it with convolutional and recurrent layers, and finally applies PyTorch to a real image classification problem.
+# Deep Learning Exercises
 
-Repository Overview
-The exercises in this repository cover the following topics:
+## Overview
 
-NumPy fundamentals and array-based image generation
-Data handling, batch generation, and data augmentation
-Building neural-network components from scratch
-Forward and backward propagation
-Loss functions and optimizers
-Convolutional neural networks
-Weight initialization strategies
-Regularization methods
-Recurrent neural networks
-PyTorch-based image classification
-Exercise Overview
-Exercise 0 – NumPy Tutorial
-Implemented basic NumPy-based pattern generation and data handling utilities.
+This repository demonstrates a complete deep learning workflow, starting from NumPy-based implementations of neural networks to PyTorch-based image classification.
 
-Main tasks included:
+The project focuses on building core deep learning components from first principles (forward/backward propagation, optimizers, CNNs, RNNs) and applying them to a real-world classification problem.
 
-Creating image patterns such as checkerboards, circles, and RGB spectra
-Implementing visualization methods
-Building an ImageGenerator class for loading labeled image data
-Supporting batching, resizing, shuffling, mirroring, and rotation-based augmentation
-Exercise 1 – Neural Networks
-Built the core parts of a simple layer-based deep learning framework from scratch.
+---
 
-Implemented components include:
+## Covered Topics
 
-SGD optimizer
-BaseLayer
-FullyConnected layer
-ReLU
-SoftMax
-CrossEntropyLoss
-NeuralNetwork class for training and testing
-This exercise focused on understanding forward propagation, backpropagation, parameter updates, and modular network design.
+* NumPy-based numerical computing
+* Neural networks from scratch (forward & backward propagation)
+* Loss functions and optimizers
+* Convolutional Neural Networks (CNNs)
+* Regularization techniques (Dropout, BatchNorm, L1/L2)
+* Recurrent Neural Networks (RNNs)
+* PyTorch-based image classification
 
-Exercise 2 – Convolutional Neural Networks
-Extended the framework with important CNN building blocks and improved optimization methods.
+---
 
-Implemented components include:
+## Exercises
 
-Weight initializers: Constant, UniformRandom, Xavier, and He
-Advanced optimizers: SGD with Momentum and Adam
-Flatten layer
-Convolutional layer
-Pooling layer
-This exercise focused on adding support for convolutional architectures and improving training stability.
+### Exercise 0 – NumPy & Data Handling
 
-Exercise 3 – Regularization and Recurrent Layers
-Expanded the framework with regularization strategies and sequence models.
+* Generated image patterns (checkerboard, circles, RGB spectrum)
+* Built an `ImageGenerator` class
+* Implemented batching, resizing, shuffling, and augmentation
 
-Implemented components include:
+---
 
-Base optimizer support for regularization
-L1 and L2 regularizers
-Dropout
-Batch Normalization
-Activation functions: TanH and Sigmoid
-Elman RNN
-Optional extensions such as LeNet and LSTM
-This exercise focused on improving generalization, handling training/testing phase differences, and learning sequence modeling fundamentals.
+### Exercise 1 – Neural Networks (From Scratch)
 
-Exercise 4 – PyTorch for Classification
-Applied deep learning concepts using PyTorch for a real classification task.
+* Implemented:
 
-Main tasks included:
+  * Fully Connected layer
+  * ReLU activation
+  * SoftMax
+  * CrossEntropyLoss
+  * SGD optimizer
+* Built a modular neural network framework
+* Implemented forward and backward propagation
 
-Building a custom ChallengeDataset
-Implementing preprocessing and augmentation pipelines
-Creating a ResNet-style architecture
-Implementing a training pipeline with validation and early stopping
-Training and tuning a model for solar-cell defect classification
-This exercise moved from framework-building to practical model development with PyTorch.
+---
 
-Skills Demonstrated
-Through these exercises, I worked on:
+### Exercise 2 – CNN & Optimization
 
-Numerical programming with NumPy
-Object-oriented design in Python
-Implementing deep learning layers and training pipelines from scratch
-CNN and RNN fundamentals
-Regularization and normalization techniques
-Model training and debugging
-PyTorch-based computer vision workflows
-Technologies Used
-Python
-NumPy
-Matplotlib
-SciPy
-scikit-image
-PyTorch
-Purpose
-This repository documents my hands-on learning process in deep learning, from low-level implementations of neural-network operations to modern PyTorch-based classification workflows.
+* Implemented:
+
+  * Convolutional layer
+  * Pooling layer
+  * Flatten layer
+* Weight initialization:
+
+  * Xavier, He, Uniform, Constant
+* Optimizers:
+
+  * SGD with Momentum
+  * Adam
+
+---
+
+### Exercise 3 – Regularization & RNN
+
+* Regularization techniques:
+
+  * L1, L2
+  * Dropout
+  * Batch Normalization
+* Activation functions:
+
+  * TanH, Sigmoid
+* Implemented:
+
+  * Elman Recurrent Neural Network (RNN)
+
+---
+
+### Exercise 4 – PyTorch Classification
+
+* Built a custom dataset and preprocessing pipeline
+* Applied data augmentation
+* Implemented a ResNet-style architecture
+* Training pipeline:
+
+  * Validation
+  * Early stopping
+* Application:
+
+  * Solar-cell defect classification
+
+---
+
+## How to Run
+
+### 1. Install dependencies
+
+```
+pip install 
+```
+
+### 2. Run an exercise
+
+```
+python src/main.py
+```
+
+*(Modify entry point depending on your implementation)*
+
+---
+
+## Skills Demonstrated
+
+* Deep learning fundamentals (from-scratch implementation)
+* CNN and RNN architectures
+* Optimization techniques (SGD, Momentum, Adam)
+* Regularization and normalization
+* PyTorch model development
+* Data preprocessing and augmentation
+
+---
+
+## Technologies Used
+
+* Python
+* NumPy
+* Matplotlib
+* SciPy
+* scikit-image
+* PyTorch
+
+---
+
+## Key Insight
+
+This project emphasizes understanding deep learning internals by implementing core components from first principles before transitioning to high-level frameworks like PyTorch.
+
+---
+
+## Author
+
+Kavya Jayaramaiah
