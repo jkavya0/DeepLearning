@@ -106,8 +106,6 @@ pip install
 python src/main.py
 ```
 
-*(Modify entry point depending on your implementation)*
-
 ---
 
 ## Skills Demonstrated
